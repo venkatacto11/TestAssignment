@@ -18,23 +18,23 @@ Build a small part of a card memory game based on your assigned role. This is me
 ### 🚀 **Setup Guide:**
 1. Clone the repository:
    ```bash
-   git clone https://github.com/testadminia/Card-Memory.git
+   git clone https://github.com/Delta-100/Test.git
    ```
 2. Navigate to the project directory:
    ```bash
-   cd Card-Memory
+   cd Test
    ```
 3. Set up the backend:
    ```bash
    cd ./backend
    npm install
-   npm run dev
+   npm start
    ```
 4. Set up the frontend:
    ```bash
    cd ../frontend
    npm install
-   npm start
+   npm run dev
    ```
 5. Visit `http://localhost:5173` to see the project.
 
