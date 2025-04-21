@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const connectDB = require('./config/database');
 const userRoutes = require('./routes/userRoutes');
 const memoryRoutes = require('./routes/memoryRoutes');
+const rewardRoutes = require('./routes/reward');
 
 
 // Load environment variables
@@ -27,6 +28,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use('/api/users', userRoutes); // Ensure this line exists
 app.use('/api/memory', memoryRoutes);
+app.use('/api/reward', rewardRoutes); // Reward Routes
 
 
 // Connect to MongoDB

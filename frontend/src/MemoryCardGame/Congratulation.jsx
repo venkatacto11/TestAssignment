@@ -1,20 +1,19 @@
-import React, { useEffect, useRef, useState } from "react";
+
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import { styled } from "@mui/system";
-import background from "../assets/images/celebration.gif"; // Background image
-import bgMusic from "../assets/audio/celebrate.mp3"; // Background music file
-import congratulationImage from "../assets/images/congrats2.png"; // Path to your congratulation image
+import background from "../assets/images/celebration.gif";
+import congratulationImage from "../assets/images/congrats2.png";
 
-// Styled Components
-const PixelBox = styled(Box)(({ theme }) => ({
+const PixelBox = styled(Box)(() => ({
   height: "100vh",
   width: "100vw",
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
-  backgroundImage: `url(${background})`,
+  backgroundImage: "url(" + background + ")",
   backgroundSize: "cover",
   backgroundPosition: "center",
   backgroundRepeat: "no-repeat",
@@ -23,7 +22,7 @@ const PixelBox = styled(Box)(({ theme }) => ({
 }));
 
 const ImageContainer = styled(Box)(() => ({
-  position: "relative", 
+  position: "relative",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
@@ -31,7 +30,7 @@ const ImageContainer = styled(Box)(() => ({
   top: "-10%",
 }));
 
-const ButtonContainer = styled(Box)(({ theme }) => ({
+const ButtonContainer = styled(Box)(() => ({
   position: "absolute",
   top: "80%",
   left: "50%",
@@ -40,9 +39,10 @@ const ButtonContainer = styled(Box)(({ theme }) => ({
   justifyContent: "center",
   alignItems: "center",
   gap: "20px",
+  flexDirection: "column"
 }));
 
-const PixelButton = styled(Box)(({ theme }) => ({
+const PixelButton = styled(Box)(() => ({
   display: "inline-block",
   backgroundColor: "#2c2c54",
   color: "#fff",
@@ -67,61 +67,8 @@ const PixelButton = styled(Box)(({ theme }) => ({
 
 const Congratulations = () => {
   const navigate = useNavigate();
-  const audioRef = useRef(null);
-  const [bgVolume, setBgVolume] = useState(
-    parseInt(localStorage.getItem("bgVolume"), 10) || 0
-  );
+  const walletAddress = localStorage.getItem("walletAddress");
 
-  // Audio setup
-  useEffect(() => {
-    // Initialize audio object
-    audioRef.current = new Audio(bgMusic);
-    const audio = audioRef.current;
-    audio.loop = true;
-    audio.volume = bgVolume / 100;
-
-    const handleClick = () => {
-      audio.play().catch((error) =>
-        console.error("Background music playback failed:", error)
-      );
-      document.removeEventListener("click", handleClick);
-    };
-
-    document.addEventListener("click", handleClick);
-
-    return () => {
-      // Cleanup
-      audio.pause();
-      audio.currentTime = 0;
-      document.removeEventListener("click", handleClick);
-    };
-  }, [bgVolume]);
-
-  // Listen to volume changes in localStorage
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const newVolume = parseInt(localStorage.getItem("bgVolume"), 10) || 0;
-      setBgVolume(newVolume);
-      if (audioRef.current) {
-        audioRef.current.volume = newVolume / 100;
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
-
-  // Ensure the game was completed before showing congratulations
-  useEffect(() => {
-    const gameCompleted = localStorage.getItem("gameCompleted");
-    if (!gameCompleted || gameCompleted !== "true") {
-      navigate("/Play");
-    }
-  }, [navigate]);
-
-  // Handlers for navigation buttons
   const handlePlayAgain = () => {
     navigate("/memory-card-game");
   };
@@ -131,22 +78,43 @@ const Congratulations = () => {
     navigate("/play");
   };
 
+  const handleClaimNFT = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/reward/claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet: walletAddress }),
+      });
+
+      const mintResult = await res.json();
+      if (mintResult.status !== "NFT Minted!") {
+        alert("Mint failed");
+        return;
+      }
+
+      const countRes = await fetch(`http://localhost:5000/api/reward/count/${walletAddress}`);
+      const { count } = await countRes.json();
+
+      alert(`NFT Claimed for ${walletAddress}\nYou now own ${count} Game Winner NFTs!`);
+    } catch (error) {
+      console.error("Error claiming NFT:", error);
+      alert("Something went wrong while claiming NFT");
+    }
+  };
+
   return (
     <PixelBox>
       <ImageContainer>
-        <img
-          src={congratulationImage}
-          alt="Congratulations"
-          style={{
-            width: "100%",  // Adjust the width as you desire (e.g., 50%)
-            height: "89%", // Maintain the aspect ratio
-          }}
-        />
+        <img src={congratulationImage} alt="Congratulations" style={{ width: "100%", height: "89%" }} />
       </ImageContainer>
 
       <ButtonContainer>
         <PixelButton onClick={handlePlayAgain}>Yes</PixelButton>
         <PixelButton onClick={handleExit}>No</PixelButton>
+        <PixelButton onClick={handleClaimNFT}>Claim NFT</PixelButton>
+        <p style={{ fontSize: "12px", color: "#00ffcc" }}>
+          Wallet: {walletAddress}
+        </p>
       </ButtonContainer>
     </PixelBox>
   );
